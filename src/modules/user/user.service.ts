@@ -1,14 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { NewPasswordDto } from './dto/new-password.dto';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-
-import Randomstring from 'randomstring';
 import { EmailService } from 'src/helpers/send-mail';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { NewPasswordDto } from './dto/new-password.dto';
 
 @Injectable()
 export class UserService {
@@ -126,8 +124,8 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(email: string): Promise<User> {
+    return this.userRepository.findOneBy({ email });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
