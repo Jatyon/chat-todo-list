@@ -124,7 +124,8 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  findOne(email: string): Promise<User> {
+  findOne(email: string): Promise<User | undefined> {
+    console.log('3');
     return this.userRepository.findOneBy({ email });
   }
 

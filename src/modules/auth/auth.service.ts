@@ -13,19 +13,34 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<string> {
+    console.log('2');
     const user: User = await this.userService.findOne(email);
-    if (user && password === user.password) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       return email;
     }
-    // if (user && bcrypt.compare(password, user.password)) {
-    //   return email;
-    // }
     return null;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
-    const { email } = loginUserDto;
-    const payload: { email: string } = { email };
-    return { access_token: this.jwtService.sign(payload) };
+  // async validateUser(email: string, pass: string): Promise<any> {
+  //   const user = await this.userService.findOne(email);
+  //   if (user && user.password === pass) {
+  //     const { password, ...result } = user;
+  //     return result;
+  //   }
+  //   return null;
+  // }
+
+  async login(user: any) {
+    const payload = { email: user.email, sub: user.userId };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
+
+  // async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+  //   console.log('2');
+  //   const { email } = loginUserDto;
+  //   const payload: { email: string } = { email };
+  //   return { access_token: this.jwtService.sign(payload) };
+  // }
 }
