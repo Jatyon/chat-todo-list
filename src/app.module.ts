@@ -11,6 +11,7 @@ import { BoardModule } from './modules/board/board.module';
 import { BoardUserModule } from './modules/board-user/board-user.module';
 import { MessageModule } from './modules/message/message.module';
 import { TaskModule } from './modules/task/task.module';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TaskModule } from './modules/task/task.module';
     MessageModule,
     TaskModule,
     UserModule,
+    PassportModule,
   ],
   controllers: [AppController],
   providers: [AppService, EmailService],
