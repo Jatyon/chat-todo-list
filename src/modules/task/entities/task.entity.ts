@@ -1,5 +1,4 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { TaskCategory } from '../enums/category.enum';
 import { Board } from 'src/modules/board/entities/board.entity';
 
 @Entity()
@@ -13,12 +12,8 @@ export class Task {
   @Column({ nullable: true })
   description: string;
 
-  @Column({
-    type: 'enum',
-    enum: TaskCategory,
-    default: TaskCategory.GENERAL,
-  })
-  category: TaskCategory;
+  @Column()
+  category: string;
 
   @Column({ default: false })
   done: boolean;

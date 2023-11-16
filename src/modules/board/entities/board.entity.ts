@@ -11,6 +11,9 @@ export class Board {
   @Column()
   name: string;
 
+  @Column()
+  owner: number;
+
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP()',

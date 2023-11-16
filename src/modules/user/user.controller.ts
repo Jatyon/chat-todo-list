@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { EmailService } from 'src/helpers/send-mail';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
 
@@ -10,7 +9,6 @@ import { NewPasswordDto } from './dto/new-password.dto';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly emailService: EmailService,
   ) {}
 
   @Post()

@@ -7,4 +7,14 @@ export class UserRepository extends Repository<User> {
   constructor(private dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
   }
+
+  getUserByBoard(boardId: number, email: string): Promise<User> {
+    return this.createQueryBuilder('user')
+      .innerJoin('user.board_users', 'board_users')
+      .innerJoin('board_users.board', 'board')
+      .select(['user'])
+      .where('user.email= :email', { email })
+      .andWhere('board.id= :boardId', { boardId })
+      .getOne();
+  }
 }

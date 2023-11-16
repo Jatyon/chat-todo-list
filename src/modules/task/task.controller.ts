@@ -12,19 +12,24 @@ export class TaskController {
     return this.taskService.create(createTaskDto);
   }
 
-  @Get()
-  findAll() {
-    return this.taskService.findAll();
+  @Get(':id')
+  findAll(@Param('id') id: string) {
+    return this.taskService.findAll(+id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.taskService.findOne(+id);
+  @Get('details/:id')
+  findDetails(@Param('id') id: string) {
+    return this.taskService.findDetails(+id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
     return this.taskService.update(+id, updateTaskDto);
+  }
+
+  @Patch('done/:id')
+  done(@Param('id') id: string) {
+    return this.taskService.done(+id);
   }
 
   @Delete(':id')

@@ -4,8 +4,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-
-import Randomstring from 'randomstring';
 import { EmailService } from 'src/helpers/send-mail';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
