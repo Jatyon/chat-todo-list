@@ -6,7 +6,7 @@ import { BoardUserRepository } from '../board-user/repositories/board-user.repos
 import { BoardUser } from '../board-user/entities/board-user.entity';
 import { UserRepository } from '../user/repositories/user.repository';
 import { User } from '../user/entities/user.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class BoardService {
@@ -17,15 +17,27 @@ export class BoardService {
     private dataSource: DataSource,
   ) {}
 
-  async create(createBoardDto: CreateBoardDto): Promise<{ status: number; message: string }> {
+  async create(createBoardDto: CreateBoardDto, user: { email: string }): Promise<{ status: number; message: string }> {
+    console.log('9');
     const name: string = createBoardDto.name;
 
-    await this.dataSource.transaction(async (): Promise<void> => {
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.startTransaction();
+
+    try {
+      const findOwner: User = await this.userRepository.findOneBy({ email: user.email });
       const newBoard: Board = new Board();
       newBoard.name = name;
-      // newBoard.owner = name; TODO: tu z cookie
+      newBoard.owner = findOwner.id;
 
-      const boardCreated: Board = await this.boardRepository.save(newBoard);
+      const boardCreated: Board = await queryRunner.manager.save(newBoard);
+
+      const newBoardOwner: BoardUser = new BoardUser();
+      newBoardOwner.board_id = boardCreated.id;
+      newBoardOwner.user_id = findOwner.id;
+
+      await queryRunner.manager.save(newBoardOwner);
 
       if (createBoardDto.members !== undefined) {
         for (const email of createBoardDto.members) {
@@ -33,27 +45,36 @@ export class BoardService {
           const newBoardUser: BoardUser = new BoardUser();
           newBoardUser.board_id = boardCreated.id;
           newBoardUser.user_id = findUser.id;
-          await this.boardUserRepository.save(newBoardUser);
+          await queryRunner.manager.save(newBoardUser);
         }
       }
-    });
-
-    return { status: 200, message: 'Board was created' };
+      await queryRunner.commitTransaction();
+      return { status: 201, message: 'Board was created' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      return { status: 422, message: 'Error durnig creating board' };
+    } finally {
+      await queryRunner.release();
+    }
   }
 
-  findAll(): Promise<Board[]> {
+  findAll(user: { email: string }): Promise<Board[]> {
     // TODO: tu z cookie
     const userId: number = 1;
 
     return this.boardRepository.getBoardByUser(userId);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} board`;
+  async findOwner(user: { email: string }): Promise<boolean> {
+    const findUser: User = await this.userRepository.findOneBy({ email: user.email });
+    const owner: Board = await this.boardRepository.findOneBy({ owner: findUser.id });
+
+    if (owner) return true;
+    return false;
   }
 
-  async updateName(id: number, name: string): Promise<{ status: number; message: string }> {
-    //TODO: guard ze tylko wlasicicel moze zmieniac nazwe
+  async updateName(id: number, name: string, user: { email: string }): Promise<{ status: number; message: string }> {
+    //TODO: guard ze tylko wlascicel moze zmieniac nazwe
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
@@ -68,8 +89,8 @@ export class BoardService {
     return { status: 200, message: 'Name was changed' };
   }
 
-  async addMember(id: number, email: string): Promise<{ status: number; message: string }> {
-    //TODO: guard ze tylko wlasicicel moze dodawac
+  async addMember(id: number, email: string, user: { email: string }): Promise<{ status: number; message: string }> {
+    //TODO: guard ze tylko wlascicel moze dodawac
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
@@ -88,10 +109,10 @@ export class BoardService {
     newBoardUser.user_id = findMember.id;
     await this.boardUserRepository.save(newBoardUser);
 
-    return { status: 200, message: 'Member was added to board' };
+    return { status: 201, message: 'Member was added to board' };
   }
 
-  async deleteMember(id: number, email: string): Promise<{ status: number; message: string }> {
+  async deleteMember(id: number, email: string, user: { email: string }) {
     //TODO: guard ze tylko wlasicicel moze usuwac
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
 
@@ -109,8 +130,6 @@ export class BoardService {
     const findBoardByUser: BoardUser = await this.boardUserRepository.findOneBy({ board_id: id, user_id: findMember.id });
 
     await this.boardUserRepository.remove(findBoardByUser);
-
-    return { status: 200, message: 'Member was removed from board' };
   }
 
   async remove(id: number): Promise<void> {

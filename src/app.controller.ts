@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { EmailService } from './helpers/send-mail';
-import { LocalAuthGuard } from './modules/auth/local-auth.guard';
+import { LocalAuthGuard } from './modules/auth/guards/local-auth.guard';
 import { AuthService } from './modules/auth/auth.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -12,24 +12,4 @@ export class AppController {
     private readonly emailService: EmailService,
     private readonly authService: AuthService,
   ) {}
-
-  // @UseGuards(LocalAuthGuard)
-  // @Post('auth/login')
-  // async login(@Request() req) {
-  //   return 1;
-  // }
-  // @UseGuards(LocalAuthGuard)
-  // @Post('auth/login')
-  // async login(@Request() req) {
-  //   return this.authService.
-  // }
-
-  // @UseGuards(LocalAuthGuard)
-  // @Post('auth/login')
-  // async login(@Request() req) {
-  //   return this.authService.login(req.user);
-  // }
-
-  @Get()
-  async getHello() {}
 }

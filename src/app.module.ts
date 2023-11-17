@@ -12,19 +12,19 @@ import { BoardUserModule } from './modules/board-user/board-user.module';
 import { MessageModule } from './modules/message/message.module';
 import { TaskModule } from './modules/task/task.module';
 import { PassportModule } from '@nestjs/passport';
+import { TypeOrmFactory } from 'config/database.config';
+
+const getEnvPath = () => (process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env');
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      entities: ['**/*.entity.js'],
-      synchronize: Boolean(process.env.DB_SYNCHRONIZE),
+    ConfigModule.forRoot({
+      envFilePath: getEnvPath(),
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useClass: TypeOrmFactory,
     }),
     AuthModule,
     BoardModule,

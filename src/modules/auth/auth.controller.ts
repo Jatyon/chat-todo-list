@@ -1,39 +1,33 @@
 import { Controller, Body, UseGuards, Post, Request, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/create-auth.dto';
-import { LocalAuthGuard } from './local-auth.guard';
-// import { JwtAuthGuard } from './jwt-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RefreshJwtGuard } from './guards/refresh-jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // @UseGuards(LocalAuthGuard)
-  // @Post('/login')
-  // login(@Request() reg) {
-  //   console.log("1");
-  //   return this.authService.login(reg.user);
-  // }
-
-  // @UseGuards(LocalAuthGuard)
-  // @Post('/login')
-  // login(@Body() loginUserDto: LoginUserDto) {
-  //   return this.authService.login(loginUserDto);
-  // }
-
   @UseGuards(LocalAuthGuard)
-  @Post('/login')
-  async login(@Request() req) {
+  @Post('login')
+  login(@Body() loginUserDto: LoginUserDto) {
     console.log('4');
-    // console.log(req.user);
-    return this.authService.login(req.user);
+    return this.authService.login(loginUserDto);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get('profile')
-  // getProfile(@Request() req) {
-  //   console.log(req.user);
-  //   return req.user;
-  // }
+  @UseGuards(RefreshJwtGuard)
+  @Post('refresh')
+  async refrshToken(@Request() req) {
+    console.log('9');
+    return this.authService.refreshToken(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    console.log('7');
+    return req.user;
+  }
 }
