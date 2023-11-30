@@ -129,6 +129,32 @@ export class UserService {
     return this.userRepository.findOneBy({ email });
   }
 
+  async addAttemptsLogin(email: string): Promise<Date> {
+    console.log('3');
+    const user: User = await this.userRepository.findOneBy({ email });
+
+    if (user) {
+      if (user.block_login_at) return user.block_login_at;
+      if (user.attemts_login >= 1) {
+        const date: Date = new Date();
+        date.setMinutes(date.getMinutes() + 30);
+        user.attemts_login = 0;
+        user.block_login_at = date;
+        this.userRepository.save(user);
+        return date;
+      }
+      user.attemts_login += 1;
+      this.userRepository.save(user);
+    }
+    return null;
+  }
+
+  async removeBlockDate(user: User): Promise<void> {
+    user.attemts_login = 0;
+    user.block_login_at = null;
+    this.userRepository.save(user);
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }

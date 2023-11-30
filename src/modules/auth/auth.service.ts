@@ -18,12 +18,24 @@ export class AuthService {
     console.log('2');
     const user: User = await this.userService.findOne(email);
     if (user && user.password === password) {
+      if (user.block_login_at) {
+        const now: Date = new Date();
+        if (now < user.block_login_at) return null;
+        await this.userService.removeBlockDate(user);
+      }
+
       return email;
     }
     // if (user && (await bcrypt.compare(password, user.password))) {
     //   return email;
     // }
     return null;
+  }
+
+  async validateAttemtsUser(email: string): Promise<Date> {
+    console.log('2');
+    const loginAttemppts: Date = await this.userService.addAttemptsLogin(email);
+    return loginAttemppts;
   }
 
   async login(loginUserDto: LoginUserDto): Promise<{ access_token: string; refresh_token: string }> {

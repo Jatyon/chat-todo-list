@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { BoardController } from './board.controller';
 import { BoardRepository } from './repositories/board.repository';
@@ -9,7 +9,7 @@ import { OwnerBoardStrategy } from '../auth/strategies/owner-board.strategy';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [forwardRef(() => AuthModule)],
   controllers: [BoardController],
   providers: [BoardService, BoardRepository, BoardUserRepository, UserRepository, JwtStrategy, OwnerBoardStrategy],
   exports: [BoardService],
