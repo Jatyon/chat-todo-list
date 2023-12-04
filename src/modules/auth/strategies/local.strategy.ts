@@ -20,11 +20,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   async validate(email: string, password: string): Promise<string> {
     console.log('11');
     const user: string | Date = await this.authService.validateUser(email, password);
-    if (!user) {
-      const blockTime: Date = await this.authService.validateAttemtsUser(email);
-      if (blockTime) throw new UnauthorizedException({ blockTime, description: 'login limit exceeded' });
-      throw new UnauthorizedException();
-    }
+    if (!user) throw new UnauthorizedException();
+    else if (user instanceof Date) throw new UnauthorizedException({ date: user, description: 'login limit exceeded' });
     return user;
   }
 }

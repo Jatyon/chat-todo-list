@@ -5,8 +5,11 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
-import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/helpers/send-mail';
+import * as bcrypt from 'bcrypt';
+import * as speakeasy from 'speakeasy';
+import * as qrcode from 'qrcode';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class UserService {
@@ -129,23 +132,19 @@ export class UserService {
     return this.userRepository.findOneBy({ email });
   }
 
-  async addAttemptsLogin(email: string): Promise<Date> {
-    console.log('3');
-    const user: User = await this.userRepository.findOneBy({ email });
-
-    if (user) {
-      if (user.block_login_at) return user.block_login_at;
-      if (user.attemts_login >= 1) {
-        const date: Date = new Date();
-        date.setMinutes(date.getMinutes() + 30);
-        user.attemts_login = 0;
-        user.block_login_at = date;
-        this.userRepository.save(user);
-        return date;
-      }
-      user.attemts_login += 1;
+  async addAttemptsLogin(user: User): Promise<Date> {
+    // TODO: jest 1 ale zmien
+    if (user.attemts_login >= 1) {
+      const date: Date = new Date();
+      date.setMinutes(date.getMinutes() + 30);
+      user.attemts_login = 0;
+      user.block_login_at = date;
       this.userRepository.save(user);
+      return date;
     }
+    user.attemts_login += 1;
+    this.userRepository.save(user);
+
     return null;
   }
 
@@ -153,6 +152,20 @@ export class UserService {
     user.attemts_login = 0;
     user.block_login_at = null;
     this.userRepository.save(user);
+  }
+
+  async generateTwoFactorAuthSecret(user: User): Promise<{ otpauth_url: string; qr_code: string }> {
+    const secret: string = authenticator.generateSecret(20);
+    const otpauthUrl: string = authenticator.keyuri(user.email, 'AUTH_APP_NAME', secret);
+
+    user.twoFa_secret = secret;
+    this.userRepository.save(user);
+
+    const qrCodeBuffer: Buffer = await qrcode.toBuffer(otpauthUrl);
+    return {
+      otpauth_url: otpauthUrl,
+      qr_code: qrCodeBuffer.toString('base64'),
+    };
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

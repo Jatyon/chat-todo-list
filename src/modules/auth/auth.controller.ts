@@ -25,6 +25,19 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('two-factor-auth/enable')
+  async enableTwoFactorAuth(@Request() req) {
+    return this.authService.enableTwoFactorAuth(req.user.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('two-factor-auth/verify')
+  async verifyTwoFactorAuth(@Request() req) {
+    const { token } = req.body;
+    return this.authService.verifyTwoFactorAuth(req.user.email, token);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     console.log('7');

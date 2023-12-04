@@ -16,6 +16,12 @@ export class User {
   @Column({ default: false })
   is_active: boolean;
 
+  @Column({ default: false })
+  is_2fa: boolean;
+
+  @Column({ nullable: true, default: null })
+  twoFa_secret: string;
+
   @Column({ nullable: true })
   activate_token: string;
 

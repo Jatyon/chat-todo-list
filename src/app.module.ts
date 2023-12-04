@@ -19,7 +19,7 @@ const getEnvPath = () => (process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: getEnvPath(),
+      envFilePath: '.env.development',
       isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
