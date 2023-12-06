@@ -168,6 +168,12 @@ export class UserService {
     };
   }
 
+  disenableTwoFactorAuth(user: User): void {
+    user.is_2fa = false;
+    user.twoFa_secret = null;
+    this.userRepository.save(user);
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }

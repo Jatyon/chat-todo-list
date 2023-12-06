@@ -1,4 +1,4 @@
-import { Controller, Body, UseGuards, Post, Request, Get } from '@nestjs/common';
+import { Controller, Body, UseGuards, Post, Request, Get, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/create-auth.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -12,9 +12,10 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@Body() loginUserDto: LoginUserDto) {
+  async login(@Body() loginUserDto: LoginUserDto) {
     console.log('4');
-    return this.authService.login(loginUserDto);
+    if (await this.authService.is2FA(loginUserDto)) return { email: loginUserDto.username, is_2fa: true };
+    return this.authService.login(loginUserDto.username);
   }
 
   @UseGuards(RefreshJwtGuard)
@@ -31,10 +32,17 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('two-factor-auth/disenable')
+  async disenableTwoFactorAuth(@Request() req) {
+    return this.authService.disenableTwoFactorAuth(req.user.email);
+  }
+
   @Post('two-factor-auth/verify')
   async verifyTwoFactorAuth(@Request() req) {
-    const { token } = req.body;
-    return this.authService.verifyTwoFactorAuth(req.user.email, token);
+    console.log(req.body);
+    const { email, token } = req.body;
+    if (await this.authService.verifyTwoFactorAuth(email, token)) return this.authService.login(email);
+    throw new UnauthorizedException({ description: 'invalid Code' });
   }
 
   @UseGuards(JwtAuthGuard)

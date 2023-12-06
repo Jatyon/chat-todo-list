@@ -5,7 +5,6 @@ import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { BoardService } from '../board/board.service';
-import * as speakeasy from 'speakeasy';
 import { authenticator } from 'otplib';
 
 @Injectable()
@@ -20,15 +19,14 @@ export class AuthService {
     console.log('2');
     const user: User = await this.userService.findOne(email);
     if (user) {
+      if (!user.is_active) return 'Account is not active';
+
       const isBlockLogin: boolean | Date = await this.checkBlockLoginTime(user);
       if (isBlockLogin instanceof Date) return isBlockLogin;
 
       if (user.password === password) {
-        if (user.is_2fa) {
-          console.log('jest f2a');
-        }
         this.userService.removeBlockDate(user);
-        return email;
+        return user.email;
       } else return await this.userService.addAttemptsLogin(user);
     }
 
@@ -47,9 +45,15 @@ export class AuthService {
     return true;
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string; refresh_token: string }> {
+  async is2FA(loginUserDto: LoginUserDto): Promise<boolean> {
     console.log('5');
     const { username: email } = loginUserDto;
+    const user: User = await this.userService.findOne(email);
+    if (user.is_2fa) return true;
+    return null;
+  }
+  async login(email: string): Promise<{ access_token: string; refresh_token: string }> {
+    console.log('5');
     const payload: { email: string } = { email };
     return { access_token: this.jwtService.sign(payload), refresh_token: this.jwtService.sign(payload, { expiresIn: '60s' }) };
   }
@@ -62,52 +66,31 @@ export class AuthService {
 
   async enableTwoFactorAuth(email: string): Promise<any> {
     const user: User = await this.userService.findOne(email);
-    if (user) {
-      return this.userService.generateTwoFactorAuthSecret(user);
-    }
+    if (user) return this.userService.generateTwoFactorAuthSecret(user);
+
     return null;
+  }
+
+  async disenableTwoFactorAuth(email: string): Promise<void> {
+    const user: User = await this.userService.findOne(email);
+    this.userService.disenableTwoFactorAuth(user);
   }
 
   async verifyTwoFactorAuth(email: string, token: string): Promise<boolean> {
     const user: User = await this.userService.findOne(email);
-    if (user) {
-      console.log(user);
-      console.log(user.twoFa_secret);
-      console.log(token);
-      // Verify the token using the user's secret key
-      console.log(
-        authenticator.verify({
-          token: token,
-          secret: user.twoFa_secret,
-        }),
-      );
-      return authenticator.verify({
-        token: token,
-        secret: user.twoFa_secret,
-      });
+    if (!user) return false;
 
-      console.log(
-        speakeasy.totp.verify({
-          secret: 'NBTXG3BVHE4GK2JDIFBTYVJOGFEHCJKK',
-          encoding: 'base32',
-          token,
-        }),
-      );
-      return speakeasy.totp.verify({
-        secret: 'NBTXG3BVHE4GK2JDIFBTYVJOGFEHCJKK',
-        encoding: 'base32',
-        token: token,
-      });
-    }
-    return false;
+    return authenticator.verify({
+      token: token,
+      secret: user.twoFa_secret,
+    });
   }
 
   async ownerBoard(payload: { email: string }) {
     console.log('1');
     const isOwner: boolean = await this.boardService.findOwner(payload);
-    if (isOwner) {
-      return isOwner;
-    }
+    if (isOwner) return isOwner;
+
     return null;
   }
 }
