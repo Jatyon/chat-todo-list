@@ -5,9 +5,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { NewPasswordDto } from './dto/new-password.dto';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
-import { EmailService } from 'src/helpers/send-mail';
+import { EmailService } from '../../helpers/send-mail';
 import * as bcrypt from 'bcrypt';
-import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
 import { authenticator } from 'otplib';
 

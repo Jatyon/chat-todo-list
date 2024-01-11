@@ -14,7 +14,7 @@ export class TaskService {
     private readonly boardRepository: BoardRepository,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<{ status: number; message: string }> {
+  async create(createTaskDto: CreateTaskDto): Promise<{ status: number; task: Task }> {
     const { title, description, done, category, boardId } = createTaskDto;
 
     const findBoard: Board = await this.boardRepository.findOneBy({ id: boardId });
@@ -34,9 +34,8 @@ export class TaskService {
     newTask.done = done;
     // newTask.created_by = description; TODO: z cookie
     // newTask.updated_by = description;
-    await this.taskRepository.save(newTask);
 
-    return { status: 200, message: 'Task was created' };
+    return { status: 200, task: await this.taskRepository.save(newTask) };
   }
 
   async findAll(id: number): Promise<Task[]> {
@@ -51,7 +50,7 @@ export class TaskService {
     return this.taskRepository.findOneBy({ id });
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<{ status: number; message: string }> {
+  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<{ status: number; task: Task }> {
     const findTask: Task = await this.taskRepository.findOneBy({ id });
 
     if (findTask === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid task' }, HttpStatus.BAD_REQUEST);
@@ -66,12 +65,10 @@ export class TaskService {
     updateTask.category = category;
     // updateTask.updated_by = category; TODO: z cookie
 
-    await this.taskRepository.save(updateTask);
-
-    return { status: 200, message: 'Task was updated' };
+    return { status: 200, task: await this.taskRepository.save(updateTask) };
   }
 
-  async done(id: number): Promise<{ status: number; message: string }> {
+  async done(id: number): Promise<{ status: number; task: Task }> {
     const findTask: Task = await this.taskRepository.findOneBy({ id });
 
     if (findTask === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid task' }, HttpStatus.BAD_REQUEST);
@@ -81,9 +78,7 @@ export class TaskService {
     updateTask.done = true;
     // updateTask.updated_by = category; TODO: z cookie
 
-    await this.taskRepository.save(updateTask);
-
-    return { status: 200, message: 'Task was updated' };
+    return { status: 200, task: await this.taskRepository.save(updateTask) };
   }
 
   async remove(id: number): Promise<void> {

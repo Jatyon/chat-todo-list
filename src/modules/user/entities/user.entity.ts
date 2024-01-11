@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { AuthRefreshToken } from 'src/modules/auth/entities/auth-refresh-token.entity';
-import { BoardUser } from 'src/modules/board-user/entities/board-user.entity';
+import { AuthRefreshToken } from '../../auth/entities/auth-refresh-token.entity';
+import { BoardUser } from '../../board-user/entities/board-user.entity';
 
 @Entity()
 export class User {
