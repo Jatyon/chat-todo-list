@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { BoardUserService } from './board-user.service';
-import { CreateBoardUserDto } from './dto/create-board-user.dto';
-import { UpdateBoardUserDto } from './dto/update-board-user.dto';
+import { BoardUserService } from '@modules/board-user/board-user.service';
+import { CreateBoardUserDto } from '@modules/board-user/dto/create-board-user.dto';
+import { UpdateBoardUserDto } from '@modules/board-user/dto/update-board-user.dto';
 
 @Controller('board-user')
 export class BoardUserController {

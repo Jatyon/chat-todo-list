@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { EmailService } from '../../helpers/send-mail';
-import { UserRepository } from './repositories/user.repository';
+import { EmailService } from '@shared/send-mail'; // TODO: modul
+import { UserService } from '@modules/user/user.service';
+import { UserController } from '@modules/user/user.controller';
+import { UserRepository } from '@modules/user/repositories/user.repository';
 
 @Module({
   controllers: [UserController],

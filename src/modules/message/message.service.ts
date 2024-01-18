@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
-import { MessageRepository } from './repositories/message.repository';
-import { Message } from './entities/message.entity';
+import { CreateMessageDto } from '@modules/message/dto/create-message.dto';
+import { UpdateMessageDto } from '@modules/message/dto/update-message.dto';
+import { MessageRepository } from '@modules/message/repositories/message.repository';
+import { Message } from '@modules/message/entities/message.entity';
 
 @Injectable()
 export class MessageService {

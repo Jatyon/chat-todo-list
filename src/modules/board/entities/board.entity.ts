@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
-import { BoardUser } from '../../board-user/entities/board-user.entity';
-import { Chat } from '../../chat/entities/chat.entity';
-import { Task } from '../../task/entities/task.entity';
+import { BoardUser } from '@modules/board-user/entities/board-user.entity';
+import { Chat } from '@modules//chat/entities/chat.entity';
+import { Task } from '@modules/task/entities/task.entity';
 
 @Entity()
 export class Board {

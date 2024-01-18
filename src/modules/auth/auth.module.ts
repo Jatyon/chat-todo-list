@@ -8,8 +8,8 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshJwtStrategy } from './strategies/refresh-token.strategy';
 import { ConfigService } from '@nestjs/config';
-import { OwnerBoardStrategy } from './strategies/owner-board.strategy';
-import { BoardModule } from '../board/board.module';
+import { OwnerBoardStrategy } from '@modules/auth/strategies/owner-board.strategy';
+import { BoardModule } from '@modules/board/board.module';
 
 const configService: ConfigService = new ConfigService();
 

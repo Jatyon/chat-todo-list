@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBoardUserDto } from './dto/create-board-user.dto';
-import { UpdateBoardUserDto } from './dto/update-board-user.dto';
+import { CreateBoardUserDto } from '@modules/board-user/dto/create-board-user.dto';
+import { UpdateBoardUserDto } from '@modules/board-user/dto/update-board-user.dto';
 
 @Injectable()
 export class BoardUserService {

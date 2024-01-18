@@ -1,11 +1,11 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { TaskRepository } from './repositories/task.repository';
-import { BoardRepository } from '../board/repositories/board.repository';
-import { Board } from '../board/entities/board.entity';
-import { Task } from './entities/task.entity';
-import { TaskCategory } from './enums/category.enum';
+import { CreateTaskDto } from '@modules/task/dto/create-task.dto';
+import { UpdateTaskDto } from '@modules/task/dto/update-task.dto';
+import { TaskRepository } from '@modules/task/repositories/task.repository';
+import { Task } from '@modules/task/entities/task.entity';
+import { TaskCategory } from '@modules/task/enums/category.enum';
+import { BoardRepository } from '@modules/board/repositories/board.repository';
+import { Board } from '@modules/board/entities/board.entity';
 
 @Injectable()
 export class TaskService {

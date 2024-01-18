@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
-import { Board } from '../../board/entities/board.entity';
-import { User } from '../../user/entities/user.entity';
+import { Board } from '@modules/board/entities/board.entity';
+import { User } from '@modules/user/entities/user.entity';
 
 @Entity()
 export class BoardUser {

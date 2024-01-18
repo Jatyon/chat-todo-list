@@ -17,9 +17,10 @@ export class EmailService {
     });
   }
 
-  async sendActivationEmail(to: string, activationToken: string) {
+  async sendActivationEmail(to: string, token: string) {
     try {
-      const activationLink: string = `http://localhost:3000/api/user/active-account/${activationToken}`;
+      const activationLink: string = `http://localhost:4200/auth/active-account/${token}`;
+      // const activationLink: string = `http://localhost:3000/api/user/active-account/${token}`;
 
       const mailOptions: { from: string; to: string; subject: string; text: string } = {
         from: 'mailnastronezgrami@gmail.com',

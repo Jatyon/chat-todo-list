@@ -1,15 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { NewPasswordDto } from './dto/new-password.dto';
+import { UserService } from '@modules/user/user.service';
+import { CreateUserDto } from '@modules/user/dto/create-user.dto';
+import { UpdateUserDto } from '@modules/user/dto/update-user.dto';
+import { ForgotPasswordDto } from '@modules/user/dto/forgot-password.dto';
+import { NewPasswordDto } from '@modules/user/dto/new-password.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {

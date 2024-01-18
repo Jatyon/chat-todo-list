@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { AuthService } from '@modules/auth/auth.service';
 import { Strategy } from 'passport-local';
 import { ExtractJwt } from 'passport-jwt';
-import { AuthService } from '../auth.service';
 
 @Injectable()
 export class OwnerBoardStrategy extends PassportStrategy(Strategy, 'owner-board') {

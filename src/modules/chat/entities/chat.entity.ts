@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne } from 'typeorm';
-import { Board } from '../../board/entities/board.entity';
-import { Message } from '../../message/entities/message.entity';
+import { Board } from '@modules/board/entities/board.entity';
+import { Message } from '@modules/message/entities/message.entity';
 
 @Entity()
 export class Chat {

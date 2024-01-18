@@ -1,11 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { NewPasswordDto } from './dto/new-password.dto';
-import { UserRepository } from './repositories/user.repository';
-import { User } from './entities/user.entity';
-import { EmailService } from '../../helpers/send-mail';
+import { EmailService } from '@shared/send-mail'; //TODO: modul
+import { CreateUserDto } from '@modules/user/dto/create-user.dto';
+import { UpdateUserDto } from '@modules/user/dto/update-user.dto';
+import { ForgotPasswordDto } from '@modules/user/dto/forgot-password.dto';
+import { NewPasswordDto } from '@modules/user/dto/new-password.dto';
+import { UserRepository } from '@modules/user/repositories/user.repository';
+import { User } from '@modules/user/entities/user.entity';
+
 import * as bcrypt from 'bcrypt';
 import * as qrcode from 'qrcode';
 import { authenticator } from 'otplib';
@@ -19,7 +20,15 @@ export class UserService {
 
   private readonly randomstring = require('randomstring');
 
-  async create(createUserDto: CreateUserDto): Promise<{ status: number; message: string }> {
+  async create(createUserDto: CreateUserDto): Promise<{
+    status: number;
+    message:
+      | string
+      | {
+          otpauth_url: string;
+          qr_code: string;
+        };
+  }> {
     const { email, password, secondPassword } = createUserDto;
 
     const findExistedUser: User = await this.userRepository.findOneBy({ email });
@@ -44,6 +53,8 @@ export class UserService {
     newUser.password = hash;
     newUser.is_active = false;
     newUser.activate_token = activateToken;
+    newUser.last_logged_at = null;
+    newUser.is_2fa = false;
     await this.userRepository.save(newUser);
 
     this.emailService.sendActivationEmail(email, activateToken);

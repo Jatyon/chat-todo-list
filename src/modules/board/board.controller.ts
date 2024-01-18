@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, UseGuards, Request } from '@nestjs/common';
-import { BoardService } from './board.service';
-import { CreateBoardDto } from './dto/create-board.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { OwnerBoardGuard } from '../auth/guards/owner-board-auth.guard';
+import { BoardService } from '@modules/board/board.service';
+import { CreateBoardDto } from '@modules/board/dto/create-board.dto';
+import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { OwnerBoardGuard } from '@modules/auth/guards/owner-board-auth.guard';
 
 @Controller('board')
 export class BoardController {

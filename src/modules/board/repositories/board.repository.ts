@@ -1,6 +1,6 @@
 import { Repository, DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { Board } from '../entities/board.entity';
+import { Board } from '@modules/board/entities/board.entity';
 
 @Injectable()
 export class BoardRepository extends Repository<Board> {
@@ -15,6 +15,4 @@ export class BoardRepository extends Repository<Board> {
       .where('board_users= :userId', { userId })
       .getMany();
   }
-
-
 }

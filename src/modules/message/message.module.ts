@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MessageService } from './message.service';
-import { MessageController } from './message.controller';
-import { MessageRepository } from './repositories/message.repository';
+import { MessageService } from '@modules/message/message.service';
+import { MessageController } from '@modules/message/message.controller';
+import { MessageRepository } from '@modules/message/repositories/message.repository';
 
 @Module({
   controllers: [MessageController],

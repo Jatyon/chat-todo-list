@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
-import { AppService } from './app.service';
-import { EmailService } from './helpers/send-mail';
-import { LocalAuthGuard } from './modules/auth/guards/local-auth.guard';
-import { AuthService } from './modules/auth/auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { AppService } from '@app/app.service';
+import { EmailService } from '@shared/send-mail'; //TODO: tu zmien dodaj modul caly
+import { LocalAuthGuard } from '@modules/auth/guards/local-auth.guard';
+import { AuthService } from '@modules/auth/auth.service';
+
 
 @Controller()
 export class AppController {

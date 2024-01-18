@@ -1,10 +1,10 @@
-import { Controller, Body, UseGuards, Post, Request, Get, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginUserDto } from './dto/create-auth.dto';
-import { LocalAuthGuard } from './guards/local-auth.guard';
+import { Controller, Body, UseGuards, Post, Request, Get, UnauthorizedException, HttpCode } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RefreshJwtGuard } from './guards/refresh-jwt-auth.guard';
+import { AuthService } from '@modules/auth/auth.service';
+import { LoginUserDto } from '@modules/auth/dto/create-auth.dto';
+import { LocalAuthGuard } from '@modules/auth/guards/local-auth.guard';
+import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { RefreshJwtGuard } from '@modules/auth/guards/refresh-jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +12,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @HttpCode(200)
   async login(@Body() loginUserDto: LoginUserDto) {
     console.log('4');
     if (await this.authService.is2FA(loginUserDto)) return { email: loginUserDto.username, is_2fa: true };

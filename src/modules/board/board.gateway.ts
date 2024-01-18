@@ -1,14 +1,14 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
-import { TaskService } from '../task/task.service';
-import { ChatService } from '../chat/chat.service';
+import { TaskService } from '@modules/task/task.service';
+import { ChatService } from '@modules/chat/chat.service';
+import { Chat } from '@modules/chat/entities/chat.entity';
+import { Message } from '@modules/message/entities/message.entity';
+import { MessageService } from '@modules/message/message.service';
+import { Task } from '@modules/task/entities/task.entity';
+import { CreateTaskDto } from '@modules/task/dto/create-task.dto';
+import { CreateTaskGatewayDto } from '@modules/task/dto/create-task-geteway.dto';
+import { UpdateTaskDto } from '@modules/task/dto/update-task.dto';
 import { Server } from 'socket.io';
-import { Chat } from '../chat/entities/chat.entity';
-import { Message } from '../message/entities/message.entity';
-import { MessageService } from '../message/message.service';
-import { Task } from '../task/entities/task.entity';
-import { CreateTaskDto } from '../task/dto/create-task.dto';
-import { CreateTaskGatewayDto } from '../task/dto/create-task-geteway.dto';
-import { UpdateTaskDto } from '../task/dto/update-task.dto';
 
 @WebSocketGateway()
 export class BoardGateway {

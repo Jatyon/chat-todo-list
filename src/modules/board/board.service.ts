@@ -1,11 +1,11 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { CreateBoardDto } from './dto/create-board.dto';
-import { BoardRepository } from './repositories/board.repository';
-import { Board } from './entities/board.entity';
-import { BoardUserRepository } from '../board-user/repositories/board-user.repository';
-import { BoardUser } from '../board-user/entities/board-user.entity';
-import { UserRepository } from '../user/repositories/user.repository';
-import { User } from '../user/entities/user.entity';
+import { CreateBoardDto } from '@modules/board/dto/create-board.dto';
+import { BoardRepository } from '@modules/board/repositories/board.repository';
+import { Board } from '@modules/board/entities/board.entity';
+import { BoardUserRepository } from '@modules/board-user/repositories/board-user.repository';
+import { BoardUser } from '@modules/board-user/entities/board-user.entity';
+import { UserRepository } from '@modules/user/repositories/user.repository';
+import { User } from '@modules/user/entities/user.entity';
 import { DataSource, QueryRunner } from 'typeorm';
 
 @Injectable()

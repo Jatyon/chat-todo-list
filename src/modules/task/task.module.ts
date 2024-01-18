@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TaskService } from './task.service';
-import { TaskController } from './task.controller';
-import { TaskRepository } from './repositories/task.repository';
-import { BoardRepository } from '../board/repositories/board.repository';
+import { TaskService } from '@modules/task/task.service';
+import { TaskController } from '@modules/task/task.controller';
+import { TaskRepository } from '@modules/task/repositories/task.repository';
+import { BoardRepository } from '@modules/board/repositories/board.repository';
 
 @Module({
   controllers: [TaskController],
