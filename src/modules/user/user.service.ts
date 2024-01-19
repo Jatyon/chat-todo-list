@@ -164,7 +164,21 @@ export class UserService {
     this.userRepository.save(user);
   }
 
-  async generateTwoFactorAuthSecret(user: User): Promise<{ otpauth_url: string; qr_code: string }> {
+  // async generateTwoFactorAuthSecret(user: User): Promise<{ secret: string }> {
+  //   const secret: string = authenticator.generateSecret(20);
+
+  //   user.twoFa_secret = secret;
+  //   this.userRepository.save(user);
+
+  //   return { secret };
+  // }
+
+  async enableTwoFactorAuth(user: User): Promise<void> {
+    user.is_2fa = true;
+    this.userRepository.save(user);
+  }
+
+  async generateTwoFactorAuthSecret(user: User): Promise<{ otpauth_url: string; qr_code: string; secret: string }> {
     const secret: string = authenticator.generateSecret(20);
     const otpauthUrl: string = authenticator.keyuri(user.email, 'AUTH_APP_NAME', secret);
 
@@ -175,6 +189,7 @@ export class UserService {
     return {
       otpauth_url: otpauthUrl,
       qr_code: qrCodeBuffer.toString('base64'),
+      secret,
     };
   }
 

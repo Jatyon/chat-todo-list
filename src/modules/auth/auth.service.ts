@@ -52,6 +52,7 @@ export class AuthService {
     if (user.is_2fa) return true;
     return null;
   }
+
   async login(email: string): Promise<{ access_token: string; refresh_token: string }> {
     console.log('5');
     const payload: { email: string } = { email };
@@ -67,7 +68,12 @@ export class AuthService {
   async enableTwoFactorAuth(email: string): Promise<any> {
     const user: User = await this.userService.findOne(email);
     if (user) return this.userService.generateTwoFactorAuthSecret(user);
+    return null;
+  }
 
+  async setTwoFactorAuth(email: string): Promise<void> {
+    const user: User = await this.userService.findOne(email);
+    if (user) return this.userService.enableTwoFactorAuth(user);
     return null;
   }
 

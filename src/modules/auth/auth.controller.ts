@@ -29,6 +29,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('two-factor-auth/enable')
   async enableTwoFactorAuth(@Request() req) {
+    console.log(req);
     return this.authService.enableTwoFactorAuth(req.user.email);
   }
 
@@ -43,6 +44,17 @@ export class AuthController {
     console.log(req.body);
     const { email, token } = req.body;
     if (await this.authService.verifyTwoFactorAuth(email, token)) return this.authService.login(email);
+    throw new UnauthorizedException({ description: 'invalid Code' });
+  }
+
+  @Post('set/two-factor-auth')
+  async setTwoFactorAuth(@Request() req) {
+    console.log(req.body);
+    const { email, token } = req.body;
+    if (await this.authService.verifyTwoFactorAuth(email, token)) {
+      await this.authService.setTwoFactorAuth(email);
+      return { message: '2fa zrobiona' };
+    }
     throw new UnauthorizedException({ description: 'invalid Code' });
   }
 

@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from '@modules/user/user.service';
 import { CreateUserDto } from '@modules/user/dto/create-user.dto';
 import { UpdateUserDto } from '@modules/user/dto/update-user.dto';
 import { ForgotPasswordDto } from '@modules/user/dto/forgot-password.dto';
 import { NewPasswordDto } from '@modules/user/dto/new-password.dto';
+import { User } from '@modules/user/entities/user.entity';
+import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -39,9 +41,11 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':email')
-  findOne(@Param('email') email: string) {
-    return this.userService.findOne(email);
+  @UseGuards(JwtAuthGuard)
+  @Post('/get')
+  async findOneByEmail(@Body() email: { email: string }) {
+    const user: User = await this.userService.findOne(email.email);
+    return { email: user.email, lastLoggedAt: user.last_logged_at, is2fa: user.is_2fa };
   }
 
   @Patch(':id')
