@@ -14,6 +14,9 @@ export class Board {
   @Column()
   owner: number;
 
+  @Column()
+  shared: boolean;
+
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP()',
@@ -27,7 +30,7 @@ export class Board {
   })
   updated_at: Date;
 
-  @OneToMany(() => BoardUser, (boardUser) => boardUser.board_id)
+  @OneToMany(() => BoardUser, (boardUser) => boardUser.board)
   board_users: BoardUser[];
 
   @OneToMany(() => Task, (task) => task.board_id)

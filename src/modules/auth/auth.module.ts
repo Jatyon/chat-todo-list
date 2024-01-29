@@ -21,7 +21,7 @@ const configService: ConfigService = new ConfigService();
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: configService.getOrThrow('JWT_SECRET'),
-        signOptions: { expiresIn: '10s' },
+        signOptions: { expiresIn: '10000s' },
       }),
     }),
   ],

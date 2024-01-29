@@ -30,6 +30,7 @@ export class BoardService {
       const newBoard: Board = new Board();
       newBoard.name = name;
       newBoard.owner = findOwner.id;
+      createBoardDto.members !== undefined ? (newBoard.shared = true) : (newBoard.shared = false);
 
       const boardCreated: Board = await queryRunner.manager.save(newBoard);
 
@@ -58,11 +59,9 @@ export class BoardService {
     }
   }
 
-  findAll(user: { email: string }): Promise<Board[]> {
-    // TODO: tu z cookie
-    const userId: number = 1;
-
-    return this.boardRepository.getBoardByUser(userId);
+  async findAll(user: { email: string }): Promise<Board[]> {
+    const findUser: User = await this.userRepository.findOneBy({ email: user.email });
+    return this.boardRepository.getBoardByUser(findUser.id);
   }
 
   async findOwner(user: { email: string }): Promise<boolean> {
@@ -103,6 +102,10 @@ export class BoardService {
 
     if (findMember !== null)
       throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User already belongs to the board' }, HttpStatus.BAD_REQUEST);
+
+    findBoard.shared = true;
+
+    this.boardRepository.save(findBoard);
 
     const newBoardUser: BoardUser = new BoardUser();
     newBoardUser.board_id = id;

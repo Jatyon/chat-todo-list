@@ -6,5 +6,6 @@ import { MessageRepository } from '@modules/message/repositories/message.reposit
 @Module({
   controllers: [MessageController],
   providers: [MessageService, MessageRepository],
+  exports: [MessageService],
 })
 export class MessageModule {}

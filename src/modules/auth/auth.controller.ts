@@ -23,6 +23,7 @@ export class AuthController {
   @Post('refresh')
   async refrshToken(@Request() req) {
     console.log('9');
+    console.log(req.user);
     return this.authService.refreshToken(req.user);
   }
 

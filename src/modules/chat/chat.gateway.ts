@@ -7,27 +7,27 @@ import { UpdateChatDto } from '@modules/chat/dto/update-chat.dto';
 export class ChatGateway {
   constructor(private readonly chatService: ChatService) {}
 
-  @SubscribeMessage('createChat')
+  @SubscribeMessage('create:chat')
   create(@MessageBody() createChatDto: CreateChatDto) {
     return this.chatService.create(createChatDto);
   }
 
-  @SubscribeMessage('findAllChat')
+  @SubscribeMessage('find:all:chat')
   findAll() {
     return this.chatService.findAll();
   }
 
-  @SubscribeMessage('findOneChat')
+  @SubscribeMessage('find:one:chat')
   findOne(@MessageBody() id: number) {
     return this.chatService.findOne(id);
   }
 
-  @SubscribeMessage('updateChat')
+  @SubscribeMessage('update:chat')
   update(@MessageBody() updateChatDto: UpdateChatDto) {
     return this.chatService.update(updateChatDto.id, updateChatDto);
   }
 
-  @SubscribeMessage('removeChat')
+  @SubscribeMessage('remove:chat')
   remove(@MessageBody() id: number) {
     return this.chatService.remove(id);
   }

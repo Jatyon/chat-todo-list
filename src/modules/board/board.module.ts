@@ -7,11 +7,16 @@ import { UserRepository } from '@modules/user/repositories/user.repository';
 import { JwtStrategy } from '@modules/auth//strategies/jwt.strategy';
 import { OwnerBoardStrategy } from '@modules/auth/strategies/owner-board.strategy';
 import { AuthModule } from '@modules/auth/auth.module';
+import { BoardGateway } from './board.gateway';
+
+import { TaskModule } from '@modules/task/task.module';
+import { MessageModule } from '@modules/message/message.module';
+import { ChatModule } from '@modules/chat/chat.module';
 
 @Module({
-  imports: [forwardRef(() => AuthModule)],
+  imports: [TaskModule, MessageModule, ChatModule, forwardRef(() => AuthModule)],
   controllers: [BoardController],
-  providers: [BoardService, BoardRepository, BoardUserRepository, UserRepository, JwtStrategy, OwnerBoardStrategy],
+  providers: [BoardService, BoardRepository, BoardGateway, BoardUserRepository, UserRepository, JwtStrategy, OwnerBoardStrategy],
   exports: [BoardService],
 })
 export class BoardModule {}

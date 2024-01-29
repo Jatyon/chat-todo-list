@@ -6,25 +6,33 @@ import { Task } from '@modules/task/entities/task.entity';
 import { TaskCategory } from '@modules/task/enums/category.enum';
 import { BoardRepository } from '@modules/board/repositories/board.repository';
 import { Board } from '@modules/board/entities/board.entity';
+import { UserRepository } from '@modules/user/repositories/user.repository';
+import { User } from '@modules/user/entities/user.entity';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly taskRepository: TaskRepository,
     private readonly boardRepository: BoardRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<{ status: number; task: Task }> {
+  async create(createTaskDto: CreateTaskDto, email: string): Promise<Task> {
     const { title, description, done, category, boardId } = createTaskDto;
 
     const findBoard: Board = await this.boardRepository.findOneBy({ id: boardId });
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
 
-    const findtask: Task = await this.taskRepository.findOneBy({ title, board_id: boardId });
+    const findTask: Task = await this.taskRepository.findOneBy({ title, board_id: boardId });
 
-    if (findBoard !== null)
+    if (findTask !== null)
       throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'task already belongs to the board' }, HttpStatus.BAD_REQUEST);
+
+    const findUser: User = await this.userRepository.getUserByBoard(boardId, email);
+
+    if (findUser === null)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User no permission' }, HttpStatus.BAD_REQUEST);
 
     const newTask: Task = new Task();
     newTask.title = title;
@@ -32,10 +40,10 @@ export class TaskService {
     newTask.category = category;
     newTask.board_id = findBoard.id;
     newTask.done = done;
-    // newTask.created_by = description; TODO: z cookie
-    // newTask.updated_by = description;
+    newTask.created_by = findUser.email;
+    newTask.updated_by = findUser.email;
 
-    return { status: 200, task: await this.taskRepository.save(newTask) };
+    return await this.taskRepository.save(newTask);
   }
 
   async findAll(id: number): Promise<Task[]> {
@@ -50,35 +58,35 @@ export class TaskService {
     return this.taskRepository.findOneBy({ id });
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<{ status: number; task: Task }> {
+  async update(id: number, updateTaskDto: UpdateTaskDto, email: string): Promise<Task> {
     const findTask: Task = await this.taskRepository.findOneBy({ id });
 
     if (findTask === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid task' }, HttpStatus.BAD_REQUEST);
+
+    const findUser: User = await this.userRepository.findOneBy({ email });
 
     const { title, description, done, category } = updateTaskDto;
 
-    const updateTask: Task = new Task();
+    findTask.title = title;
+    findTask.description = description;
+    findTask.done = done;
+    findTask.category = category;
+    findTask.updated_by = findUser.email;
 
-    updateTask.title = title;
-    updateTask.description = description;
-    updateTask.done = done;
-    updateTask.category = category;
-    // updateTask.updated_by = category; TODO: z cookie
-
-    return { status: 200, task: await this.taskRepository.save(updateTask) };
+    return await this.taskRepository.save(findTask);
   }
 
-  async done(id: number): Promise<{ status: number; task: Task }> {
+  async done(id: number, email: string): Promise<Task> {
     const findTask: Task = await this.taskRepository.findOneBy({ id });
 
     if (findTask === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid task' }, HttpStatus.BAD_REQUEST);
 
-    const updateTask: Task = new Task();
+    const findUser: User = await this.userRepository.findOneBy({ email });
 
-    updateTask.done = true;
-    // updateTask.updated_by = category; TODO: z cookie
+    findTask.done = true;
+    findTask.updated_by = findUser.email;
 
-    return { status: 200, task: await this.taskRepository.save(updateTask) };
+    return await this.taskRepository.save(findTask);
   }
 
   async remove(id: number): Promise<void> {

@@ -11,8 +11,8 @@ export class BoardRepository extends Repository<Board> {
   getBoardByUser(userId: number): Promise<Board[]> {
     return this.createQueryBuilder('board')
       .innerJoin('board.board_users', 'board_users')
-      .select(['board.name'])
-      .where('board_users= :userId', { userId })
+      .select(['board.id', 'board.name', 'board.shared'])
+      .where('board_users.user_id= :userId', { userId })
       .getMany();
   }
 }

@@ -5,5 +5,6 @@ import { ChatRepository } from '@modules/chat/repositories/chat.repository';
 
 @Module({
   providers: [ChatGateway, ChatService, ChatRepository],
+  exports: [ChatService],
 })
 export class ChatModule {}

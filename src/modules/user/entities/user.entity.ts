@@ -57,6 +57,6 @@ export class User {
   @OneToMany(() => AuthRefreshToken, (token) => token.user_id)
   users: AuthRefreshToken[];
 
-  @OneToMany(() => BoardUser, (boardUser) => boardUser.user_id)
+  @OneToMany(() => BoardUser, (boardUser) => boardUser.user)
   board_users: BoardUser[];
 }

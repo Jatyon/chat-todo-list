@@ -32,10 +32,10 @@ export class Task {
   updated_at: Date;
 
   @Column()
-  created_by: number;
+  created_by: string;
 
   @Column()
-  updated_by: number;
+  updated_by: string;
 
   @Column()
   board_id: number;
