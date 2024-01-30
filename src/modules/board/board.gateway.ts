@@ -1,4 +1,11 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 import { TaskService } from '@modules/task/task.service';
 import { ChatService } from '@modules/chat/chat.service';
 import { Chat } from '@modules/chat/entities/chat.entity';
@@ -9,18 +16,19 @@ import { CreateTaskDto } from '@modules/task/dto/create-task.dto';
 import { CreateTaskGatewayDto } from '@modules/task/dto/create-task-geteway.dto';
 import { UpdateTaskDto } from '@modules/task/dto/update-task.dto';
 import { Server, Socket } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
-import { WsAuthGuard } from '@modules/auth/guards/ws-auth.guard';
-import { SocketAuthMiddleware } from '@modules/auth/guards/ws-auth.middleware';
+import { UnauthorizedException, UseGuards } from '@nestjs/common';
+
+import { verify } from 'jsonwebtoken';
+import { ConfigService } from '@nestjs/config';
+
+const configService: ConfigService = new ConfigService();
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-@UseGuards(WsAuthGuard)
-export class BoardGateway {
+export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly chatService: ChatService,
     private readonly messageService: MessageService,
@@ -30,15 +38,30 @@ export class BoardGateway {
   @WebSocketServer()
   server: Server;
 
-  // afterInit(client: Socket) {
-  //   console.log("9");
-  //   client.use(SocketAuthMiddleware() as any);
-  // }
-
-  @SubscribeMessage('connect')
-  async handleChatJoinRoom(client: Socket) {
-    console.log(client.id);
+  async handleConnection(client: Socket) {
+    try {
+      const { authorization } = client.handshake.headers;
+      const token: string = authorization.split(' ')[1];
+      verify(token, configService.getOrThrow('JWT_SECRET'));
+    } catch (error) {
+      return this.disconnect(client);
+    }
   }
+  async handleDisconnect(client: Socket) {
+    client.disconnect();
+  }
+
+  private disconnect(client: Socket) {
+    client.emit('error', new UnauthorizedException());
+    client.disconnect();
+  }
+
+  // afterInit(client: Socket) {
+  //   console.log('9');
+  //   // const a = client.use(SocketAuthMiddleware() as any);
+  //   // console.log(a);
+  //   console.log('s');
+  // }
 
   // @SubscribeMessage('chat:join:room')
   // async handleChatJoinRoom(client: any, data: { token: string }) {
@@ -57,17 +80,19 @@ export class BoardGateway {
   //   this.server.to(token).emit('chat:new:message', message);
   // }
 
-  // @UseGuards(JwtAuthGuard)
   @SubscribeMessage('board:join')
-  async handleBoardJoin(client: any, roomToken: string) {
-    client.join(roomToken);
-    const chat: Chat = await this.chatService.getChatByToken(roomToken);
-    const tasks: Task[] = await this.taskService.findAll(chat.board_id);
-    this.server.to(roomToken).emit('board:load:tasks', tasks);
+  async handleBoardJoin(client: Socket, boardId: string) {
+    const chat: Chat = await this.chatService.getChatByBoard(+boardId);
+    if (chat) {
+      client.join(chat.token);
+      const tasks: Task[] = await this.taskService.findAll(chat.board_id);
+      this.server.to(chat.token).emit('board:load:tasks', tasks);
+    } else this.disconnect(client);
   }
 
   @SubscribeMessage('board:add:task')
-  async handleAddTask(client: any, data: { createTaskGatewayDto: CreateTaskGatewayDto; token: string }) {
+  async handleAddTask(client: Socket, data: { createTaskGatewayDto: CreateTaskGatewayDto; token: string }) {
+    console.log(data);
     const { token, createTaskGatewayDto } = data;
     const chat: Chat = await this.chatService.getChatByToken(token);
     const { board_id } = chat;

@@ -24,7 +24,8 @@ export class TaskService {
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
 
-    const findTask: Task = await this.taskRepository.findOneBy({ title, board_id: boardId });
+    const findTask: Task = await this.taskRepository.findOneBy({ title });
+    console.log(findTask);
 
     if (findTask !== null)
       throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'task already belongs to the board' }, HttpStatus.BAD_REQUEST);

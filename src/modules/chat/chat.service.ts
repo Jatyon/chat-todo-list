@@ -12,6 +12,10 @@ export class ChatService {
     return this.chatRepository.findOneBy({ token });
   }
 
+  async getChatByBoard(boardId: number): Promise<Chat> {
+    return this.chatRepository.findOneBy({ board_id: boardId });
+  }
+
   create(createChatDto: CreateChatDto) {
     return 'This action adds a new chat';
   }
