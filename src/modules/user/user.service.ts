@@ -137,6 +137,10 @@ export class UserService {
     return `This action returns all user`;
   }
 
+  getUserByBoard(boardId: number, email: string): Promise<User> {
+    return this.userRepository.getUserByBoard(boardId, email);
+  }
+
   findOne(email: string): Promise<User | undefined> {
     console.log('3');
     return this.userRepository.findOneBy({ email });

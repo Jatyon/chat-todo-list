@@ -12,9 +12,10 @@ import { BoardGateway } from './board.gateway';
 import { TaskModule } from '@modules/task/task.module';
 import { MessageModule } from '@modules/message/message.module';
 import { ChatModule } from '@modules/chat/chat.module';
+import { UserModule } from '@modules/user/user.module';
 
 @Module({
-  imports: [TaskModule, MessageModule, ChatModule, forwardRef(() => AuthModule)],
+  imports: [TaskModule, MessageModule, ChatModule, UserModule, forwardRef(() => AuthModule)],
   controllers: [BoardController],
   providers: [BoardService, BoardRepository, BoardGateway, BoardUserRepository, UserRepository, JwtStrategy, OwnerBoardStrategy],
   exports: [BoardService],

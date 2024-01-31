@@ -18,8 +18,10 @@ import { UpdateTaskDto } from '@modules/task/dto/update-task.dto';
 import { Server, Socket } from 'socket.io';
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 
-import { verify } from 'jsonwebtoken';
+import { verify, JwtPayload } from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
+import { User } from '@modules/user/entities/user.entity';
+import { UserService } from '@modules/user/user.service';
 
 const configService: ConfigService = new ConfigService();
 
@@ -33,6 +35,7 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatService: ChatService,
     private readonly messageService: MessageService,
     private readonly taskService: TaskService,
+    private readonly userService: UserService,
   ) {}
 
   @WebSocketServer()
@@ -42,7 +45,8 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const { authorization } = client.handshake.headers;
       const token: string = authorization.split(' ')[1];
-      verify(token, configService.getOrThrow('JWT_SECRET'));
+      const tokenData = verify(token, configService.getOrThrow('JWT_SECRET'));
+      if (typeof tokenData !== 'string') client.emit('user:email', tokenData.email);
     } catch (error) {
       return this.disconnect(client);
     }
@@ -56,80 +60,67 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.disconnect();
   }
 
-  // afterInit(client: Socket) {
-  //   console.log('9');
-  //   // const a = client.use(SocketAuthMiddleware() as any);
-  //   // console.log(a);
-  //   console.log('s');
-  // }
-
-  // @SubscribeMessage('chat:join:room')
-  // async handleChatJoinRoom(client: any, data: { token: string }) {
-  //   const { token } = data;
-  //   client.join(token);
-  //   const chat: Chat = await this.chatService.getChatByToken(token);
-  //   const messages: Message[] = await this.messageService.getMessages(chat.id);
-  //   this.server.to(token).emit('chat:load:messages', messages);
-  // }
-
-  // @SubscribeMessage('chat:send:message')
-  // async handleChatSendMessage(client: any, data: { token: string; user_id: string; content: string }) {
-  //   const { token, user_id, content } = data;
-  //   const chat: Chat = await this.chatService.getChatByToken(token);
-  //   const message = await this.messageService.saveMessage(chat.id, +user_id, content);
-  //   this.server.to(token).emit('chat:new:message', message);
-  // }
-
   @SubscribeMessage('board:join')
-  async handleBoardJoin(client: Socket, boardId: string) {
+  async handleBoardJoin(client: Socket, data: { boardId: string; email: string }) {
+    const { boardId, email } = data;
     const chat: Chat = await this.chatService.getChatByBoard(+boardId);
     if (chat) {
-      client.join(chat.token);
-      const tasks: Task[] = await this.taskService.findAll(chat.board_id);
-      this.server.to(chat.token).emit('board:load:tasks', tasks);
+      const findUser: User = await this.userService.getUserByBoard(+boardId, email);
+      if (findUser) {
+        client.join(chat.token);
+        const tasks: Task[] = await this.taskService.findAll(chat.board_id, email);
+        client.emit('board:load:tasks', tasks);
+        client.emit('board:token', chat.token);
+      } else this.disconnect(client);
     } else this.disconnect(client);
   }
 
+  @SubscribeMessage('chat:join:room')
+  async handleChatJoinRoom(client: Socket, data: { token: string }) {
+    const chat: Chat = await this.chatService.getChatByToken(data.token);
+    if (chat) {
+      const messages: Message[] = await this.messageService.getMessages(chat.id);
+      client.emit('chat:load:messages', messages);
+    } else this.disconnect(client);
+  }
+
+  @SubscribeMessage('chat:send:message')
+  async handleChatSendMessage(client: Socket, data: { token: string; email: string; content: string }) {
+    const { token, email, content } = data;
+    const chat: Chat = await this.chatService.getChatByToken(token);
+    const message: Message = await this.messageService.saveMessage(chat.id, chat.board_id, email, content);
+    this.server.to(token).emit('chat:new:message', message);
+  }
+
   @SubscribeMessage('board:add:task')
-  async handleAddTask(client: Socket, data: { createTaskGatewayDto: CreateTaskGatewayDto; token: string }) {
+  async handleAddTask(client: Socket, data: { newTask: CreateTaskGatewayDto; token: string; email: string }) {
     console.log(data);
-    const { token, createTaskGatewayDto } = data;
+    const { token, email, newTask } = data;
     const chat: Chat = await this.chatService.getChatByToken(token);
     const { board_id } = chat;
-    const createTaskDto: CreateTaskDto = { token, ...createTaskGatewayDto, boardId: board_id };
-    const task: Task = await this.taskService.create(createTaskDto, 'aaa'); //TODO: tutaj email
+    const createTaskDto: CreateTaskDto = { ...newTask, boardId: board_id };
+    const task: Task = await this.taskService.create(createTaskDto, email);
     this.server.to(token).emit('board:send:task', task);
   }
 
-  // @SubscribeMessage('board:update:task')
-  // async handleUpdateTask(client: any, data: { updateTaskDto: UpdateTaskDto; token: string; id: number }) {
-  //   const { updateTaskDto, token, id } = data;
-  //   const chat: Chat = await this.chatService.getChatByToken(token);
-  //   const task: Task = await this.taskService.update(id, updateTaskDto, 'aaa'); //TODO: tutaj email
-  //   this.server.to(token).emit('board:send:task', task);
-  // }
+  @SubscribeMessage('board:update:task')
+  async handleUpdateTask(client: Socket, data: { updateTask: UpdateTaskDto; token: string; id: number; email: string }) {
+    const { updateTask, token, id, email } = data;
+    const task: Task = await this.taskService.update(id, updateTask, email);
+    this.server.to(token).emit('board:send:update:task', task);
+  }
 
-  // @SubscribeMessage('board:details:task')
-  // async handleDetailsTask(client: any, data: { token: string; id: number }) {
-  //   const { token, id } = data;
-  //   const chat: Chat = await this.chatService.getChatByToken(token);
-  //   const task: Task = await this.taskService.findDetails(id);
-  //   this.server.to(token).emit('board:send:details:task', task);
-  // }
+  @SubscribeMessage('board:done:task')
+  async handleDoneTask(client: Socket, data: { token: string; email: string; id: number }) {
+    const { token, email, id } = data;
+    const task: Task = await this.taskService.done(id, email);
+    this.server.to(token).emit('board:send:done:task', task);
+  }
 
-  // @SubscribeMessage('board:done:task')
-  // async handleDoneTask(client: any, data: { token: string; id: number }) {
-  //   const { token, id } = data;
-  //   const chat: Chat = await this.chatService.getChatByToken(token);
-  //   const task: Task = await this.taskService.done(id, 'aaa'); //TODO: tutaj email
-  //   this.server.to(token).emit('board:send:done:task', task);
-  // }
-
-  // @SubscribeMessage('boardRemoveTask')
-  // async handleRemoveTask(client: any, data: { token: string; id: number }) {
-  //   const { token, id } = data;
-  //   const chat: Chat = await this.chatService.getChatByToken(token);
-  //   await this.taskService.remove(id);
-  //   this.server.to(token).emit('board:send:remove:task', id);
-  // }
+  @SubscribeMessage('board:remove:task')
+  async handleRemoveTask(client: any, data: { token: string; email: string; id: number }) {
+    const { token, id } = data;
+    await this.taskService.remove(id);
+    this.server.to(token).emit('board:send:remove:task', id);
+  }
 }

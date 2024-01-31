@@ -24,8 +24,7 @@ export class TaskService {
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
 
-    const findTask: Task = await this.taskRepository.findOneBy({ title });
-    console.log(findTask);
+    const findTask: Task = await this.taskRepository.findOneBy({ title, board_id: boardId });
 
     if (findTask !== null)
       throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'task already belongs to the board' }, HttpStatus.BAD_REQUEST);
@@ -47,10 +46,15 @@ export class TaskService {
     return await this.taskRepository.save(newTask);
   }
 
-  async findAll(id: number): Promise<Task[]> {
+  async findAll(id: number, email: string): Promise<Task[]> {
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
+
+    const findUser: User = await this.userRepository.getUserByBoard(id, email);
+
+    if (findUser === null)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User no permission' }, HttpStatus.BAD_REQUEST);
 
     return this.taskRepository.findBy({ board_id: id });
   }
@@ -65,6 +69,9 @@ export class TaskService {
     if (findTask === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid task' }, HttpStatus.BAD_REQUEST);
 
     const findUser: User = await this.userRepository.findOneBy({ email });
+
+    if (findUser === null)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User no permission' }, HttpStatus.BAD_REQUEST);
 
     const { title, description, done, category } = updateTaskDto;
 
@@ -83,6 +90,9 @@ export class TaskService {
     if (findTask === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid task' }, HttpStatus.BAD_REQUEST);
 
     const findUser: User = await this.userRepository.findOneBy({ email });
+
+    if (findUser === null)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User no permission' }, HttpStatus.BAD_REQUEST);
 
     findTask.done = true;
     findTask.updated_by = findUser.email;

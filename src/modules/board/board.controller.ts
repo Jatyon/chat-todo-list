@@ -20,6 +20,12 @@ export class BoardController {
     return this.boardService.findAll(req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('members/:id')
+  findMembers(@Param('id') id: string, @Request() req) {
+    return this.boardService.findMembers(+id);
+  }
+
   // @UseGuards(JwtAuthGuard)
   // @Get(':id')
   // findOne(@Param('id') id: string, @Request() req) {
@@ -33,16 +39,16 @@ export class BoardController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  addMember(@Param('id') id: string, @Body() member: string, @Request() req) {
-    return this.boardService.addMember(+id, member, req.user);
+  @Patch('member/:id')
+  addMember(@Param('id') id: string, @Body() member: { email: string }, @Request() req) {
+    return this.boardService.addMember(+id, member.email, req.user);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
+  @Patch('member/del/:id')
   @HttpCode(204)
-  deleteMember(@Param('id') id: string, @Body() member: string, @Request() req) {
-    return this.boardService.deleteMember(+id, member, req.user);
+  deleteMember(@Param('id') id: string, @Body() member: { email: string }, @Request() req) {
+    return this.boardService.deleteMember(+id, member.email, req.user);
   }
 
   @UseGuards(OwnerBoardGuard)

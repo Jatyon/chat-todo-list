@@ -17,4 +17,8 @@ export class UserRepository extends Repository<User> {
       .andWhere('board.id= :boardId', { boardId })
       .getOne();
   }
+
+  getEmails(userIds: number[]): Promise<User[]> {
+    return this.createQueryBuilder('user').select(['user.email']).where('user.id IN (:...userIds)', { userIds }).getMany();
+  }
 }

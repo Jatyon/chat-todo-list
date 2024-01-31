@@ -16,8 +16,8 @@ export class TaskController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findAll(@Param('id') id: string) {
-    return this.taskService.findAll(+id);
+  findAll(@Param('id') id: string, @Request() req) {
+    return this.taskService.findAll(+id, req.user.email);
   }
 
   @UseGuards(JwtAuthGuard)

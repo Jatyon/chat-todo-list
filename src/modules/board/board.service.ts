@@ -72,6 +72,12 @@ export class BoardService {
     return false;
   }
 
+  async findMembers(id: number): Promise<User[]> {
+    const boardUsers: BoardUser[] = await this.boardUserRepository.findBy({ board_id: id });
+    const userIds: number[] = boardUsers.map((user) => user.user_id);
+    return await this.userRepository.getEmails(userIds);
+  }
+
   async updateName(id: number, name: string, user: { email: string }): Promise<{ status: number; message: string }> {
     //TODO: guard ze tylko wlascicel moze zmieniac nazwe
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
@@ -88,35 +94,36 @@ export class BoardService {
     return { status: 200, message: 'Name was changed' };
   }
 
-  async addMember(id: number, email: string, user: { email: string }): Promise<{ status: number; message: string }> {
-    //TODO: guard ze tylko wlascicel moze dodawac
+  async addMember(id: number, newMember: string, user: { email: string }): Promise<{ email: string }> {
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
 
-    const findUser: User = await this.userRepository.findOneBy({ email });
+    const findUser: User = await this.userRepository.findOneBy({ email: newMember });
 
     if (findUser === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid user' }, HttpStatus.BAD_REQUEST);
 
-    const findMember: User = await this.userRepository.getUserByBoard(id, email);
+    const findOwner: User = await this.userRepository.findOneBy({ email: user.email });
 
+    if (findOwner.id !== findBoard.owner)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User no permission' }, HttpStatus.BAD_REQUEST);
+
+    const findMember: User = await this.userRepository.getUserByBoard(id, newMember);
     if (findMember !== null)
       throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User already belongs to the board' }, HttpStatus.BAD_REQUEST);
 
     findBoard.shared = true;
 
     this.boardRepository.save(findBoard);
-
     const newBoardUser: BoardUser = new BoardUser();
     newBoardUser.board_id = id;
-    newBoardUser.user_id = findMember.id;
+    newBoardUser.user_id = findUser.id;
     await this.boardUserRepository.save(newBoardUser);
 
-    return { status: 201, message: 'Member was added to board' };
+    return { email: newMember };
   }
 
   async deleteMember(id: number, email: string, user: { email: string }) {
-    //TODO: guard ze tylko wlasicicel moze usuwac
     const findBoard: Board = await this.boardRepository.findOneBy({ id });
 
     if (findBoard === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid board' }, HttpStatus.BAD_REQUEST);
@@ -124,6 +131,14 @@ export class BoardService {
     const findUser: User = await this.userRepository.findOneBy({ email });
 
     if (findUser === null) throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'invalid user' }, HttpStatus.BAD_REQUEST);
+
+    const findOwner: User = await this.userRepository.findOneBy({ email: user.email });
+
+    if (findOwner.id !== findBoard.owner)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'User no permission' }, HttpStatus.BAD_REQUEST);
+
+    if (email === user.email)
+      throw new HttpException({ status: HttpStatus.BAD_REQUEST, message: 'Cannot remove owner' }, HttpStatus.BAD_REQUEST);
 
     const findMember: User = await this.userRepository.getUserByBoard(id, email);
 
